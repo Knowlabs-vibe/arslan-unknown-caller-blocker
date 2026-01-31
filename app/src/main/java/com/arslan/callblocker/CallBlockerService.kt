@@ -6,6 +6,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.provider.ContactsContract
+import android.provider.Settings
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.telephony.SmsManager
@@ -94,7 +95,7 @@ class CallBlockerService : CallScreeningService() {
                 sendSms(phoneNumber, message)
             }
 
-            // Send WhatsApp
+            // Send WhatsApp (with auto-send if accessibility enabled)
             if (prefs.getBoolean("send_whatsapp", true)) {
                 sendWhatsAppMessage(phoneNumber, message)
             }
@@ -120,6 +121,15 @@ class CallBlockerService : CallScreeningService() {
             // Clean phone number (remove spaces, dashes, etc.)
             val cleanNumber = phoneNumber.replace(Regex("[^+0-9]"), "")
             
+            // Check if accessibility service is enabled for auto-send
+            val accessibilityEnabled = isAccessibilityServiceEnabled()
+            
+            if (accessibilityEnabled) {
+                // Trigger auto-send via accessibility service
+                WhatsAppAccessibilityService.triggerSend(this, cleanNumber, message)
+                Log.d(TAG, "Auto-send enabled, triggering accessibility service")
+            }
+            
             // Create WhatsApp intent
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse("https://wa.me/$cleanNumber?text=${Uri.encode(message)}")
@@ -129,12 +139,33 @@ class CallBlockerService : CallScreeningService() {
             // Check if WhatsApp is installed
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
-                Log.d(TAG, "WhatsApp message initiated to $cleanNumber")
+                Log.d(TAG, "WhatsApp opened for $cleanNumber (auto-send: $accessibilityEnabled)")
             } else {
                 Log.w(TAG, "WhatsApp not installed")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error sending WhatsApp: ${e.message}")
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        try {
+            val accessibilityEnabled = Settings.Secure.getInt(
+                contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                0
+            )
+            if (accessibilityEnabled != 1) return false
+
+            val serviceString = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+
+            return serviceString.contains("${packageName}/${WhatsAppAccessibilityService::class.java.canonicalName}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking accessibility: ${e.message}")
+            return false
         }
     }
 

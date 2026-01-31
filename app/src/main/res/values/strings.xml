@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Call Blocker</string>
+    <string name="accessibility_service_description">This service automatically sends WhatsApp messages to blocked callers. It detects when WhatsApp opens and taps the send button for you.</string>
 </resources>

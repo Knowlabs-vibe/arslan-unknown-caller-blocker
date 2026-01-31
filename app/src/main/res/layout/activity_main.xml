@@ -59,7 +59,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Checking..."
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/textViewAccessibilityStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Checking accessibility..."
+                    android:textSize="14sp"
+                    android:alpha="0.8" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -161,12 +170,25 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Send WhatsApp"
-                        android:textSize="16sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Send WhatsApp"
+                            android:textSize="16sp" />
+                            
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Enable accessibility for auto-send"
+                            android:textSize="11sp"
+                            android:alpha="0.6" />
+                    </LinearLayout>
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switchSendWhatsapp"
@@ -229,7 +251,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Permission Buttons -->
+        <!-- Action Buttons -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonRequestPermissions"
             android:layout_width="match_parent"
@@ -243,6 +265,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Set as Default Call Screener"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonEnableAccessibility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🚀 Enable WhatsApp Auto-Send"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:visibility="gone" />
 
     </LinearLayout>

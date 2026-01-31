@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -103,6 +104,11 @@ class MainActivity : AppCompatActivity() {
         binding.buttonSetDefault.setOnClickListener {
             requestCallScreeningRole()
         }
+
+        // Enable accessibility button
+        binding.buttonEnableAccessibility.setOnClickListener {
+            openAccessibilitySettings()
+        }
     }
 
     private fun checkPermissions() {
@@ -127,6 +133,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun openAccessibilitySettings() {
+        try {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+            Toast.makeText(
+                this,
+                "Find 'Call Blocker' and enable it for auto-send WhatsApp",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Please enable accessibility manually in Settings", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        try {
+            val accessibilityEnabled = Settings.Secure.getInt(
+                contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                0
+            )
+            if (accessibilityEnabled != 1) return false
+
+            val serviceString = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+
+            return serviceString.contains("${packageName}/${WhatsAppAccessibilityService::class.java.canonicalName}")
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
     private fun updateStatus() {
         val allPermissionsGranted = requiredPermissions.all {
             ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
@@ -139,6 +179,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        val isAccessibilityEnabled = isAccessibilityServiceEnabled()
         val isEnabled = prefs.getBoolean("enabled", true)
 
         val statusText = when {
@@ -148,12 +189,21 @@ class MainActivity : AppCompatActivity() {
             else -> "✅ Active - Unknown callers will be blocked"
         }
 
+        val accessibilityStatus = if (isAccessibilityEnabled) {
+            "✅ WhatsApp auto-send enabled"
+        } else {
+            "⚠️ WhatsApp auto-send disabled - tap button below to enable"
+        }
+
         binding.textViewStatus.text = statusText
+        binding.textViewAccessibilityStatus.text = accessibilityStatus
 
         // Show/hide buttons based on state
         binding.buttonRequestPermissions.visibility = 
             if (!allPermissionsGranted) android.view.View.VISIBLE else android.view.View.GONE
         binding.buttonSetDefault.visibility = 
             if (allPermissionsGranted && !isCallScreeningApp) android.view.View.VISIBLE else android.view.View.GONE
+        binding.buttonEnableAccessibility.visibility =
+            if (!isAccessibilityEnabled) android.view.View.VISIBLE else android.view.View.GONE
     }
 }

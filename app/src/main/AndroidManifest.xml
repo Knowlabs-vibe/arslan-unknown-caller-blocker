@@ -40,6 +40,19 @@
             </intent-filter>
         </service>
 
+        <!-- WhatsApp Accessibility Service for Auto-Send -->
+        <service
+            android:name=".WhatsAppAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <!-- Boot Receiver to start service on device boot -->
         <receiver
             android:name=".BootReceiver"
