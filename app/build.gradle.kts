@@ -46,3 +46,14 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.preference:preference-ktx:1.2.1")
 }
+
+android.signingConfigs.create("release") {
+    storeFile = file("../release-key.jks")
+    storePassword = "android"
+    keyAlias = "callblocker"
+    keyPassword = "android"
+}
+
+android.buildTypes.getByName("release") {
+    signingConfig = android.signingConfigs.getByName("release")
+}
